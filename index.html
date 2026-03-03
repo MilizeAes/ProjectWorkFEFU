@@ -1,9 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Document</title>
-</head>
-<body>
+<form id="loginForm">
+    <input type="text" id="login" placeholder="Логин" required>
+    <input type="password" id="password" placeholder="Пароль" required>
+    <button type="submit">Войти</button>
+</form>
+<div id="message" style="color: red;"></div>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
     
-</body>
-</html>
+    const formData = new FormData();
+    formData.append('login', document.getElementById('login').value);
+    formData.append('password', document.getElementById('password').value);
+
+    fetch('search.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            window.location.href = 'profile.php'; // Переход при успехе
+        } else {
+            document.getElementById('message').innerText = data.message;
+        }
+    });
+});
+</script>
