@@ -1,33 +1,25 @@
 <?php
 session_start();
-
-// Параметры БД
-$host = 'localhost';
-$db   = 'kvd';
-$user = 'root';
-$pass = 'Krossover2007';
+header('Content-Type: application/json');
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
-} catch (PDOException $e) {
-    echo json_encode(['status' => 'error', 'message' => 'Ошибка подключения']);
-    exit;
-}
+    $pdo = new PDO("mysql:host=localhost;dbname=kvd;charset=utf8mb4", "root", "Krossover2007");
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $login = $_POST['login'] ?? '';
+        $pass = $_POST['password'] ?? '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $login = $_POST['login'] ?? '';
-    $password = $_POST['password'] ?? '';
+        $stmt = $pdo->prepare("SELECT ID_personal FROM users WHERE Login = ? AND Password = ?");
+        $stmt->execute([$login, $pass]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Ищем пользователя по Login и Password (как в вашей таблице)
-    $stmt = $pdo->prepare("SELECT ID_personal FROM users WHERE Login = ? AND Password = ?");
-    $stmt->execute([$login, $password]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($user) {
-        // Сохраняем ID_personal в сессию
-        $_SESSION['user_id'] = $user['ID_personal'];
-        echo json_encode(['status' => 'success']);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Неверный логин или пароль']);
+        if ($user) {
+            $_SESSION['user_id'] = $user['ID_personal'];
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Неверный логин или пароль']);
+        }
     }
+} catch (PDOException $e) {
+    echo json_encode(['status' => 'error', 'message' => 'Ошибка БД']);
 }
